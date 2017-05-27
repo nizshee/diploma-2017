@@ -1,72 +1,203 @@
 \section{Реализация}
 
 В этом разделе наше внимание сместится на осбенности реализации процессов
-связанных с типами в Scala Plugin.
-Особенное внимание будет уделено спецификации scala \cite{scala_spec}.
-Мы проследим как соответсвующие понятия от туда переносятся в Scala Plugin.
+связанных с типами в Scala Plugin и особенности их инструментирования.
+Так как конечной целью является визуализация работы этих процессов, то
+хочется максимально опираться на стандарт языка, которым является спецификация
+scala \cite{scala_spec}.
+Мы проследим как соответсвующие понятия из спецификации переносятся в Scala Plugin.
+А там где это не возможно будет явно указано на расхождение в реализации плагина и
+спецификации.
+Так-же будет указано как визуализируется каждый процесс.
+
+% Реализация в плагине в плагине
+% Смысл в последующей визуализации
+% Хочется сделать С уважением к спецификации
+% Однако не везде это возможно сделать
+% Где можно сделаем
+% Везде будет указано расхождение
 
 До этого момента, когда мы говорили о работе плагина, то использовали
 нейтральное слово процесс.
 Теперь нужно вспомнить, что изначальной задачей было явно визуализировать
 работу связанную с типами, которую плагин делает неявно.
+Архитектура части плагина связанной с типами будет
+рассмотрена в разделе \ref{sec:arch}.
 Перечислим интересующие нас процессы.
 
-Базовым вопросом является сравнение двух типов.
+Базовым процессом является сравнение двух типов.
 В спецификации для этого вводятся три понятия: эквивалентность типов, сводимость
 типов и слабая сводимость типов.
 Эквивалентность означает что один тип мы в любом контексте можем заменить другим
 типом, и это отношение наиболее понятно интуитивно.
 Сводимость типов намного более интересна и используется во всех других процессах.
 Ее мы рассмотрим в разделе~\ref{sec:conformance}.
+Там же будет описание слабой сводимости, а также будет разобрано представление
+типов в Scala Plugin и их отличия от типов описанных в спецификации scala.
 
-Вывод типов  - что-то было
+Следующим интересующим нас процессом будет вывод типов.
+Важно что вывод типов в плагине и в спецификации осуществляется по разному.
+Подробно об этом будет написано в разделе~\ref{sec:infer}
 
-Разрешение перегрузок - ...
+Последний процесс, следующий из вывода типов - это разрешение перегрузок функций.
+Действительно, типовые переменные появляются в вызовах полиморфных
+функций и их неявный вывод актуален для конкретного вызова.
+А так как в scala присутствуют перегрузки функций, то прежде всего нужно
+разрешить символ на котором были вызваны аргументы.
+Процесс разрешения перегрузок будет рассмотрен в разделе~\ref{sec:overloading}.
 
-implicits - уже существует инструмент...
-Динамические типы...
-
-При этом не стоит забывать что Scala Plugin ровно как и компилятор scala
-должны реализовывать спецификацию scala \cite{scala_spec}.
-Смысл в последующей визуализации
-Хочется сделать С уважением к спецификации
-Однако не везде это возможно сделать
-Где можно сделаем
-Везде будет указано расхождение
-
-Достаточно абстрактоно и упрощенно архитектуре плагина будет
-рассмотрена в разделе \ref{sec:arch}.
-Там же дается общая ифнормация о сводимости типов, выводе типов и поиске
-наиболее специфичной перегрузки.
-
-Более подробно о типах scala и их представлении в плагине.
-В разделе \ref{sec:conformance} будут рассмотрены типы описанные спецификацией
-scala на примере проверки их сводимости. Также внимание будет уделено
-отличию от типов в scala plugin.
-
-В разделе \ref{sec:infer} основной темой будет отличия вывода в плагине от
-спецификации.
-
-Завершит все  разрешение перегрузок \ref{sec:overloading}.
+Отдельного упоминания заслуживает механизм implicit.
+В данной работе не затрагивались неявные преобразования и неявные параметры.
+В рамках Scala Plugin уже существуют ShowImplicitParametersAction, показывающий
+неявно передаваемые параметры, и GoToImplicitConversationAction, помогающий
+в работе с неявными преобразованиями.
+Так же в данной работе не освященна работа с динамическими типами.
 
 \subsection{Архитектура Scala Plugin}
 \label{sec:arch}
 
-Постоянные проверки типа Any, Nothing...
-JavaArray
-Object
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{img/call-graph}
+\caption{Граф вызовов}
+\label{fig:callGraph}
+\end{figure}
 
-Хиндли-Милнер \cite{hindley–milner}
+Как говорилось выше, нас будет интересовать применение полиморфной функции
+к набору аргументов.
+Для начала рассмотрим этот такое применение будет обрабатываться плагином с
+точки зрения архитектуры.
+На рисунке~\ref{fig:callGraph}, несколько упрощенно, показан граф вызовов
+такой обработки.
+Мы явно будем указывать классы, основные и вспомогательные функции в которых
+использовалась аннотация uninstrumented.
+Это поможет понять куда именно добавлялась инструментация.
+% основываясь на интересующих нас процессах
+% будет указано колличество аннотаций
+
+\textbf{Улучшить введение.}
+Представим что у нас есть символ \textbf{f} и аргументы
+\textbf{e1} ,..., \textbf{en}.
+Для проверки этого применения будет вызван метод \textbf{resolve} объекта
+\textbf{ReferenceExpressionResolver}.
+Это и будет точкой входа.
+Аннотировано uninstrumented:
+\begin{itemize}
+  \item \textbf{ReferenceExpressionResolver.resolve}
+\end{itemize}
+% Здесь только к методу \textbf{resolve} будет добавлена аннотация uninstrumented.
+
+Далее с помощью класса \textbf{MethodResolveProcessor} будет осуществлен
+поиск кандидатов обладающих таким же именем как \textbf{f}.
+\textbf{MethodResolveProcessor} будет хранить множество кандидатов и
+результаты применения соответсвующих кандидатов к аргументам.
+Также там находится часть логики по фильтрации кандидатов, более подробно о которой
+будет написано в разделе~\ref{sec:overloading}.
+Аннотировано uninstrumented:
+\begin{itemize}
+  \item класс \textbf{MethodResolveProcessor}
+  \item \textbf{MethodResolveProcessor.problemsFor}
+  \item \textbf{MethodResolveProcessor.candidates}
+\end{itemize}
+% Аннотация uninstrumented была добавлена к самому классу
+% \textbf{MethodResolveProcessor}, а также к вспомогательным методам
+% объекта-компаньона \textbf{problemsFor} и \textbf{candidates}.
+
+Для каждого кандидата нужно проверить, возможно ли вызвать его с такими аргументами.
+Инструменты для этого находятся в классе \textbf{Compatibility}.
+Омновная часть кода здесь - это перебор разных конструкций Scala Plugin,
+описывающих исходный код, а также способов применения к ним аргументов.
+Например, разбор таких случаев как передача аргумента по имени или параметры со
+значением по умолчанию.
+Аннотировано uninstrumented:
+\begin{itemize}
+  \item \textbf{Compatibility.checkConformance}
+  \item \textbf{Compatibility.checkConformanceExt}
+  \item \textbf{Compatibility.compatible}
+\end{itemize}
+% Здесь аннотация uninstrumented добавлена к методам объекта
+% \textbf{checkConformance}, \textbf{checkConformanceExt} и \textbf{compatible}.
+
+Для проверки двух типов используется интерфейс \textbf{Conformance}.
+У этого интерфейса две реализации: одна для системы типов scala, другая для
+системы типов dotty \cite{dotty}, нового поколения языка scala.
+В обоих случаях метод \textbf{conformsInner} возвращает пару: возможна ли
+сходимость и набор ограничений на абстрактные типы при которых сходимость
+возможна.
+Про процесс сходимости написано в разделе~\ref{sec:conformance}.
+Аннотировано uninstrumented:
+\begin{itemize}
+  \item \textbf{Conformance.conformsInner}
+  \item \textbf{Conformance.computable}
+  \item \textbf{Conformance.checkParameterizedTypes}
+  \item \textbf{Conformance.addParam}
+  \item \textbf{Conformance.addArgedBound}
+  \item класс \textbf{Conformance.LeftConformanceVisitor}
+\end{itemize}
+% Здесь аннотации uninstrumented применяются к методам
+% \textbf{conformsInner}, \textbf{computable}, \textbf{checkParameterizedTypes},
+% \textbf{addParam}, \textbf{addArgedBound}, а также к
+% классу \textbf{LeftConformanceVisitor}.
+
+Далее необходимо проверить что ограничения полученные на предыдущем шаге
+возможно разрешить.
+Для этого есть интерфейс \textbf{ScUndefinedSubstitutor}.
+Его реализуют \textbf{ScUndefinedSubstitutorImpl} и
+\textbf{ScMultiUndefinedSubstitutor}.
+Отличие одной реализации от другой состоит в том, что
+\textbf{ScUndefinedSubstitutorImpl} хранит только один набор ограничений, в
+то время как \textbf{ScMultiUndefinedSubstitutor} хранит сразу несколько.
+Это может понадобится если существует более одного способа добиться сводимости
+типов. Конкретно это используется для составных типов.
+Больше информации можно получить в разделе~\ref{sec:infer} о выводе типов.
+Аннотировано uninstrumented:
+\begin{itemize}
+  \item \textbf{ScUndefinedSubstitutor.addLower}
+  \item \textbf{ScUndefinedSubstitutor.addUpper}
+  \item \textbf{ScUndefinedSubstitutor.getSubstitutorWithBounds}
+  \item \textbf{ScUndefinedSubstitutor.getSubstitutor}
+\end{itemize}
+% Аннотация uninstrumented используется методах \textbf{addLower},
+% \textbf{addUpper}, \textbf{getSubstitutorWithBounds}, а также \textbf{getSubstitutor}.
+
+Интересно заметить, что пара \textbf{Compatibility} и
+\textbf{ScUndefinedSubstitutor} образуют что-то вроде алгоритма
+Хиндли-Милнера \cite{hindley–milner}.
+
+Остался класс \textbf{MostSpecificUtil}.
+Он нужен если после всех проверок сделанных \textbf{MethodResolveProcessor}
+осталось больше одного кандитата.
+В таком случае требуется найти наиболее специфичного кандитата.
+Именно этим \textbf{MostSpecificUtil} и занимается.
+Подробнее в разделе~\ref{sec:overloading}.
+Аннотировано uninstrumented:
+\begin{itemize}
+  \item класс \textbf{MostSpecificUtil}.
+\end{itemize}
+% С помощью uninstrumented аннотируется только сам класс
+% \textbf{MostSpecificUtil}.
+
+% Все это было инструментровано для сбора дополнительных данных.
+Всего в проекте потребовалось использовать 28 аннотаций uninstrumented.
+Стоит заметить что граф вызовов сильно упрощен для улучшения понимания.
+На самом деле по разным причинам все вызывают почти всех.
+
+% Повсюду куча сравнений...\textbf{MethodResolveProcessor} \textbf{Compatibility}
 
 
 \subsection{Проверка сводимости типов}
 \label{sec:conformance}
+Постоянные проверки типа Any, Nothing...
+JavaArray
+Object
+
 Value Types
 
 Non-Value Types
 
 \subsubsection{Singleton Types}
 \subsubsection{Type Projection}
+dot calculus \cite{dot_calculus}
 \subsubsection{Type Designators}
 \subsubsection{Parameterized Types}
 \subsubsection{Compound Types}
@@ -81,7 +212,10 @@ Non-Value Types
 \label{sec:infer}
 
 Вывод типов локальный.
+
 В спекцификации вывод типов так-то.
 В плагине абсолютно иначе.
+
+Информация про выведенные типы попадает обратно в сходимость.
 \subsection{Разрешение перегрузок функций}
 \label{sec:overloading}
