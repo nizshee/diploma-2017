@@ -71,7 +71,7 @@
 монада Option.
 Значение по умолчанию None позволит не изменять уже существующие вызовы функции f.
 
-\begin{lstlisting}[language=scala,basicstyle=\ttfamily,keywordstyle=\color{red}]
+\begin{lstlisting}[caption={Явная передача объекта инструментации внутрь функции}]
 def f(..., instrumentation: Option[Instrumentation] = None)
 \end{lstlisting}
 
@@ -81,7 +81,7 @@ Option и его функции высшего порядка такие как 
 и которые игнорируются если Option оказался пуст.
 
 \begin{samepage}
-\begin{lstlisting}[language=scala,basicstyle=\ttfamily,keywordstyle=\color{red}]
+\begin{lstlisting}[caption={Действия внутри контекста инструментации}]
 instrumentation.foreach { i =>
   val a = computeA
   i.addInformation(a)
@@ -108,7 +108,7 @@ Option для нас - это контекст, в котором живут в�
 В примере ниже показано как это сделать используя функцию map.
 
 \begin{samepage}
-\begin{lstlisting}[language=scala,basicstyle=\ttfamily,keywordstyle=\color{red}]
+\begin{lstlisting}[caption={Привязка к контексту инструментации}]
 var intermediate = instrumentation.map(_ => Seq.empty[R])
 for (i <- 0 to n) {
   val r = findResultFor(i)
@@ -125,7 +125,7 @@ for (i <- 0 to n) {
 Это может понадобиться когда для вложенного вызова объект инструментации изменяется.
 
 \begin{samepage}
-\begin{lstlisting}[language=scala,basicstyle=\ttfamily,keywordstyle=\color{red}]
+\begin{lstlisting}[caption={Создание нового объекта инструментации}]
 val inner = instrumentation.map(_.inner)
 g(..., instrumentation = inner)
 instrumentation.foreach(_.add(inner.get.data))
@@ -171,8 +171,7 @@ forall вернет false и поток исполнения продолжит�
 В конце мы с помощью exists проверяем был ли поднят флаг прерывания в процессе работы,
 и если бы то возвращаем соответствующее значение.
 
-\begin{samepage}
-\begin{lstlisting}[language=scala,basicstyle=\ttfamily,keywordstyle=\color{red}]
+\begin{lstlisting}[caption={Влияние на первоначальную логику}]
 val cached = cache.get(key)
 if (cached != null && instrumentation.isEmpty) return cached
 
@@ -183,7 +182,6 @@ val conditionB = computeB(instrumentation = instrumentation)
 if (instrumentation.exits(_.interrupted())) return false
 return conditionB
 \end{lstlisting}
-\end{samepage}
 
 До этого момента мы говорили только о функциях.
 Достаточно ли нам уметь работать только с ними?
@@ -444,6 +442,8 @@ in eponymous companions".
 \subsection{Сохраненные данные и визуализация}
 \label{sec:data}
 
+\textbf{переписать}
+
 Здесь мы немного поговорим о визуализации накопленных данных,
 и о том в каком виде эти данные удобно хранить.
 
@@ -464,5 +464,4 @@ in eponymous companions".
 Именно с помощью него мы и будем хранить все необходимые данные.
 А во время визуализации решение что именно нужно отрисовать будет приниматься
 с помощью механизма сравнения с шаблоном.
-
-\textbf{Если нужно, добавить пример каких-то классов.}
+В разделе~\ref{sec:conformance} будет пример.
