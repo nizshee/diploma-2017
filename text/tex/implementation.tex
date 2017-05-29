@@ -229,6 +229,7 @@ Scala Plugin и типов описанных в спецификации scala.
 уровне типов это сводится к частному случаю параметризованного класса.
 Отдельная сущность для массива влечет дублирование кода для параметризованных
 типов, в котором и так очень много повторений.
+\textbf{про несоовтетсвие типов.}
 Все это сильно повышает неоднородность кода.
 
 Теперь поговорим про визуализацию сводимости типов.
@@ -279,28 +280,93 @@ case class Conformance(left: ScType, right: ScType,
 В обоих случаях передается контекст.
 
 В ходе работы собираются условия.
-после рекурсивных вызовов полученные условия объединяются в отношения.
-После этого мы получаем уже готовую для визуализации структуру.  
+После рекурсивных вызовов полученные условия объединяются в отношения.
+После этого мы получаем уже готовую для визуализации структуру.
 
 \textbf{Картинка во вложении.}
 
+На этом заканчивается часть про сведение типов в общем и начинается часть про
+сводимость для конкретных типов.
+Это позволит лучше понять отличия типов представленных внутри Scala Compiler
+и спецификацией scala.
 
 Value Types
 
 Non-Value Types
 
-\subsubsection{Singleton Types}
+\subsubsection{Singleton Type}
+Scala очень сильно использует концепцию пространств имен.
+Причем не только для пакетов или типов.
+В scala также у каждой переменной есть свое пространство имен.
+За счет этого механизма в scala существует некоторая разновидность зависимых
+типов \cite{dependent_type}, а апогеем этой идеи является DOT calculus
+\cite{dot_calculus}.
+
+Singleton type используется для того чтобы солаться на тип объекта, пакета или
+переменной.
+Обычно singleton type встречается когда мы хотим сослаться на тип объекта.
+
+В плагине этот тип не преставлен классом, а его роль как правило выполняет
+\textbf{ScDesignatorType}.
+Хоть в спецификации singleton type и вводится через концепцию пути,
+\textbf{ScDesignatorType} по сути представляет оберку над ссылкой на место в коде,
+где соответсвующий объект вводится.
+А проверка сводимости заменяется на проверку эквивалентности.
+
+Отдельным случаем в плагине является использование singleton type для ссылки
+\textbf{this}.
+
+ThisType
+
+
 \subsubsection{Type Projection}
-dot calculus \cite{dot_calculus}
+ScProjectionType
+
 \subsubsection{Type Designators}
+ScDesignatorType
+
 \subsubsection{Parameterized Types}
+ParameterizedType
+
 \subsubsection{Compound Types}
+ScCompoundType
+
 \subsubsection{Existential Types}
+ScExistentialType
+
+ScExistentialArgument
+
 \subsubsection{Method Types}
+
+ScMethodType
+
 \subsubsection{Polymorphic Method Types}
 Типы высших кайндов - куда-то
-\subsubsection{Type Constructors}
-Запустить, посмотреть во что выльется.
+
+ScTypePolymorphicType
+
+
+\subsubsection{Abstract Types}
+
+TypeParameterType
+
+ScExistentialArgument
+
+\subsubsection{Типы представленные только в Scala Plugin}
+JavaArray
+
+ScAbstractType
+
+UndefinedType
+
+StdType
+\subsubsection{Типы представленные только в спецификации scala}
+Tuple
+
+Function
+убирание синтаксического сахара, ссылка на диплом козлова.
+ссылка на работу Козлова
+
 
 \subsection{Вывод типов}
 \label{sec:infer}
@@ -311,5 +377,6 @@ dot calculus \cite{dot_calculus}
 В плагине абсолютно иначе.
 
 Информация про выведенные типы попадает обратно в сходимость.
+
 \subsection{Разрешение перегрузок функций}
 \label{sec:overloading}
