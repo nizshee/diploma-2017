@@ -1,8 +1,121 @@
 \section{Обзор}
 
+Scala является популярным языком программирования.
+
+Система типов.
+
+Скала использует многоие штуки из теории типов.
+\begin{itemize}
+  \item Унифицированная система типов
+  \item Параметризованные типы
+  Вариантность.
+  \item Структурные типы
+  \item Типы высших кайндов
+  \item Implicit
+  \item Экзестенциальные типы
+  \item Path-dependent types
+\end{itemize}
+
+Однако использование широких возможностей системы типы влечет к избыточости.
+Все эти типы могут занимать много места.
+
+Поэтому компилятор может дописывать типы за пользователя.
+Компилятор может выводить типы за пользователя, что особенно удобно с
+использованием лямбда-функций.
+Т.е. типы не указываются явно, а компилятор делает неявное преобразование.
+
+If you have, you might have wondered why the OCaml compiler does not produce
+better error messages. The reason is: it can't.
+
+Хотелось бы исеть штуку, которая поможет с этим.
+Причем лучше чтобы она была доступна в какой-то интегрированной среде разработке.
+Заметим что ИСР должны выполнять ту же работу по выводу типов что и компилятор.
+Семантические ошибки требуют знания типов.
+Существуют две подобные ИСР: Scala Plugin для intellij idea и плагин для
+eclipse scala IDE.
+Нужно определиться и выбрать одну из них.
+Далее мы будем говорить про intellij idea.
+
+Рассмотрим, какие бывают помощники, описывающие работу компилятора.
+
 \subsection{Отладчик типов для языка программирования OCaml}
 \label{sec:ocaml}
+
+OCaml, как и большинство функциональных языков, использует мощную статическкую
+типизацию.
+Как и в scala компилятор берет на себя работу по выводу типов.
+During type inference, the OCaml compiler finds a type conflict between
+two subexpressions: one requires one type and the other provides a different
+type. However, there is no way for the OCaml compiler to know which of the two
+types is the right type for the programmer. Thus, the OCaml compiler arbitrarily
+chooses one of them and reports it as a type error.
+
+Сущетвует интересный проект, призванный помочь разработчикам.
+
+The Type Debugger in this page improves on this situation by asking
+questions to the programmer. From the answers to the questions, it understands
+the programmer's intention and leads the programmer to the real source of the
+type error. This idea of asking questions to obtain programmer's intention is
+due to Shapiro's algorithmic program debugging and is used by Chitil to design
+a type debugger for a small subset of Haskell.
+
+We extend this approach to
+support full OCaml by reusing the type inferencer in the OCaml compiler.
+
+Существование подобного проекта составляет прецедент для подобных помощников.
+
 \subsection{Scala type debugger}
 \label{sec:typeDebugger}
+
+Возникает логичный вопрос - существует ли подобный инструмент для языка
+программирования
+Есть такая штука.
+
+Пара статей со ссылками, одна написана в соавторстве с Мартином Одерски.
+
+Обладает рядом проблем - нужно тащить в репозиторий.
+Но на момент написания работы не обновлялось в течение 5 лет.
+Укзано что eclipse, но нет.
+
+Последней трудностью будет то, что он все равно использует scala compiler.
+Scala Plugin же строит занимается анализом кода самостоятельно,
+без помощи компилятора.
+
 \subsection{Show implicit parameters action}
 \label{sec:showImplicit}
+
+В качестве заключении рассмотрим как в рамках интегрированной среды
+разработки помогать пользователю анализировать/моделировать работу выполняемую
+компилятором.
+
+В качестве примера мы будем использовать Show implicit parameters action.
+Механизм implicit параметров.
+Существуют определенные правила поиска соответвствующих параметров.
+
+Эта штука показывает что да как.
+
+\subsection{Постановка цели}
+
+Можно привести три случая непостредственной пользы подобной штуки.
+
+Понизить уровень вхождения.
+
+Работа будет основана на работе плагина, а не компилятора.
+Несмотря на, в некоторых нетривиальных случаях это может посочь.
+
+Для людей которые должны работать с внутренним устройством плагина это может
+помочь без необходимости непосредственной отладки.
+
+\textbf{Цель:}
+Сделать отладчик для процессов связанных с типами в рамках Scala Plugin.
+
+\textbf{Задачи:}
+\begin{itemize}
+  \item Инструментировать Scala Plugin для сбора данных о рпоцемме работы с типами.
+  \item
+  \item
+\end{itemize}
+
+Стоит сделать замечание, в разделе~\ref{sec:instrumentation} будет более подробно
+рассказано почему в качестве способа сбора данных было выбрано именно
+инструментирование исходного кода плагина.
