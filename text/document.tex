@@ -4,9 +4,9 @@
 
 % \usepackage{newclude}
 \usepackage{listings}
+\usepackage[noend]{algpseudocode}
 \usepackage{algorithm}
-\usepackage{algorithmicx}
-\usepackage{algpseudocode}
+% \usepackage{algorithmicx}
 
 \lstdefinelanguage{scala}{
   morekeywords={abstract,case,catch,class,def,%
@@ -26,6 +26,9 @@
 }
 % ,frame=tlrb
 \lstset{language=scala,basicstyle=\ttfamily,keywordstyle=\color{red},frame=single}
+
+\renewcommand{\lstlistingname}{Пример кода}
+\floatname{algorithm}{Алгоритм}
 
 
 \begin{document}
