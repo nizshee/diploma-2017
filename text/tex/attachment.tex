@@ -15,13 +15,13 @@
   \begin{subfigure}{\linewidth}
     \centering
     \includegraphics[width=.8\linewidth]{img/conformance1}
-    \caption{Неправильное сведение}
+    % \caption{Неправильное сведение}
   \end{subfigure}
 
   \begin{subfigure}{\linewidth}
     \centering
     \includegraphics[width=.8\linewidth]{img/conformance2}
-    \caption{Правильное сведение}
+    % \caption{Правильное сведение}
   \end{subfigure}
   \caption{Проверка сводимости}
   \label{fig:conformance}
@@ -46,18 +46,35 @@
 \addcontentsline{toc}{section}{Приложение Б. Пример вывода типов}
 
 \begin{figure}[h!]
+  \begin{minipage}{.5\linewidth}
   \centering
-  \begin{subfigure}{\linewidth}
-    \centering
-    \includegraphics[width=.8\linewidth]{img/conformance1}
-    \caption{Неправильное сведение}
-  \end{subfigure}
+  \includegraphics[scale=.35]{img/infer1}
+  \end{minipage}%
+  \begin{minipage}{.5\linewidth}
+  \centering
+  \includegraphics[scale=.35]{img/infer3}
+  \end{minipage}\par\medskip
+  \centering
+  \includegraphics[scale=.7]{img/infer2}
 
-  \begin{subfigure}{\linewidth}
-    \centering
-    \includegraphics[width=.8\linewidth]{img/conformance2}
-    \caption{Правильное сведение}
-  \end{subfigure}
+  % \centering
+  % \begin{subfigure}{\linewidth}
+  %   \centering
+  %   \includegraphics[width=.7\linewidth]{img/infer1}
+  %   \caption{Неправильное сведение}
+  % \end{subfigure}
+  %
+  % \begin{subfigure}{\linewidth}
+  %   \centering
+  %   \includegraphics[width=.7\linewidth]{img/infer2}
+  %   \caption{Правильное сведение}
+  % \end{subfigure}
+  %
+  % \begin{subfigure}{\linewidth}
+  %   \centering
+  %   \includegraphics[width=.7\linewidth]{img/infer3}
+  %   \caption{Правильное сведение}
+  % \end{subfigure}
   \caption{Проверка сводимости}
   \label{fig:infer}
 \end{figure}
